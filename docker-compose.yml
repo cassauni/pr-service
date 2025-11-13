@@ -1,0 +1,40 @@
+services:
+  pr-db:
+    image: postgres:16-alpine
+    container_name: pr-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  pr-migrate:
+    image: migrate/migrate:latest
+    depends_on:
+      - pr-db
+    volumes:
+      - ./migrations:/migrations:ro
+    entrypoint: >
+      sh -c '
+        apk add --no-cache postgresql-client >/dev/null 2>&1 &&
+        echo Waiting for pr-db… &&
+        until pg_isready -h pr-db -U postgres; do sleep 1; done &&
+        echo DB is up — запускаем миграции &&
+        exec migrate -path /migrations \
+             -database "postgres://postgres:password@pr-db:5432/postgres?sslmode=disable" up
+      '
+
+  pr-service:
+    build: .
+    container_name: pr-service
+    depends_on:
+      - pr-migrate
+    volumes:
+      - ./config/config.yaml:/etc/pr-service/config.yaml:ro
+      - ./migrations:/migrations:ro
+    ports:
+      - "8080:8080"

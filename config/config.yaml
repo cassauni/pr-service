@@ -1,0 +1,11 @@
+Postgres:
+  port: "5432"
+  host: "pr-db"
+  user: "postgres"
+  password: "password"
+  DBName: "postgres"
+  sslMode: "allow"
+
+HTTP:
+  host: "0.0.0.0"
+  port: "8080"
