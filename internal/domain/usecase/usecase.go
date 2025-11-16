@@ -1,13 +1,31 @@
 package usecase
 
 import (
-	"pr-service/config"
+	"context"
+	"math/rand"
 	"pr-service/internal/domain/repository/postgres"
+	"time"
+
+	"pr-service/config"
+	"pr-service/internal/domain/entities"
 
 	"go.uber.org/zap"
 )
 
 type repository interface {
+	TeamExists(ctx context.Context, teamName string) (bool, error)
+	CreateTeam(ctx context.Context, team entities.Team) error
+	GetTeam(ctx context.Context, teamName string) (entities.Team, error)
+
+	SetUserIsActive(ctx context.Context, userID string, isActive bool) (entities.User, error)
+	GetUserByID(ctx context.Context, userID string) (entities.User, error)
+	ListTeamActiveUsersExcept(ctx context.Context, teamName, exceptUserID string) ([]entities.User, error)
+
+	CreatePullRequest(ctx context.Context, pr entities.PullRequest, reviewers []string) error
+	GetPullRequest(ctx context.Context, prID string) (entities.PullRequest, []string, error)
+	MarkPullRequestMerged(ctx context.Context, prID string) (entities.PullRequest, []string, error)
+	ReplaceReviewer(ctx context.Context, prID, oldUserID, newUserID string) error
+	ListPullRequestsByReviewer(ctx context.Context, reviewerID string) ([]entities.PullRequestShort, error)
 }
 
 type Usecase struct {
@@ -21,13 +39,33 @@ func NewUsecase(
 	repo *postgres.Repository,
 	cfg *config.ConfigModel,
 ) (*Usecase, error) {
-	return newUsecase(log, repo, cfg), nil
+	rand.Seed(time.Now().UnixNano())
+	return &Usecase{cfg: cfg, log: log, repo: repo}, nil
 }
 
-func newUsecase(
-	log *zap.Logger,
-	repo repository,
-	cfg *config.ConfigModel,
-) *Usecase {
-	return &Usecase{cfg: cfg, log: log, repo: repo}
+func pickReviewers(users []entities.User, max int) []string {
+	if max <= 0 || len(users) == 0 {
+		return nil
+	}
+	if len(users) <= max {
+		res := make([]string, 0, len(users))
+		for _, u := range users {
+			res = append(res, u.UserID)
+		}
+		return res
+	}
+
+	idxs := make([]int, len(users))
+	for i := range users {
+		idxs[i] = i
+	}
+	rand.Shuffle(len(idxs), func(i, j int) {
+		idxs[i], idxs[j] = idxs[j], idxs[i]
+	})
+
+	res := make([]string, 0, max)
+	for i := 0; i < max; i++ {
+		res = append(res, users[idxs[i]].UserID)
+	}
+	return res
 }

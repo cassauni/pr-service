@@ -1,8 +1,15 @@
 package http
 
 func (s *Server) createController() {
-	public := s.serv.Group("/pr")
+	s.serv.GET("/health", s.Health)
 
-	public.GET("/helth", s.Helth)
+	s.serv.POST("/team/add", s.HandleTeamAdd)
+	s.serv.GET("/team/get", s.HandleTeamGet)
 
+	s.serv.POST("/users/setIsActive", s.HandleSetIsActive)
+	s.serv.GET("/users/getReview", s.HandleGetUserReview)
+
+	s.serv.POST("/pullRequest/create", s.HandlePullRequestCreate)
+	s.serv.POST("/pullRequest/merge", s.HandlePullRequestMerge)
+	s.serv.POST("/pullRequest/reassign", s.HandlePullRequestReassign)
 }
