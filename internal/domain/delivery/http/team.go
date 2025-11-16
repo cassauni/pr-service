@@ -40,3 +40,25 @@ func (s *Server) HandleTeamGet(c *gin.Context) {
 
 	c.JSON(http.StatusOK, team)
 }
+
+func (s *Server) HandleTeamBulkDeactivate(c *gin.Context) {
+	var req entities.BulkDeactivateRequest
+	if err := c.ShouldBindJSON(&req); err != nil || len(req.UserIDs) == 0 {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	result, err := s.Usecase.BulkDeactivateTeamUsers(
+		c.Request.Context(),
+		req.TeamName,
+		req.UserIDs,
+	)
+	if err != nil {
+		s.handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": result,
+	})
+}

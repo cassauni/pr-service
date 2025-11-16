@@ -1,0 +1,52 @@
+version: "2"
+
+run:
+  timeout: 3m
+  tests: false              # не гоняем линтер по тестам в этом проекте
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - govet           # стандартный анализатор Go
+    - staticcheck     # мощный набор статических проверок
+    - ineffassign     # неиспользуемые присваивания
+    - errcheck        # необработанные ошибки
+    - revive          # стиль, простые code-smell'ы
+
+  disable:
+    - depguard        # ограничения по импортам нам не нужны
+    - funlen          # слишком строгий для учебного задания
+    - godox           # не ругаемся на TODO
+    - gocyclo         # не ограничиваем цикломатическую сложность
+
+linters-settings:
+  revive:
+    rules:
+      - name: exported
+        disabled: true          # не требуем комментарии для экспортируемых сущностей
+      - name: package-comments
+        disabled: true          # и для комментариев к пакетам тоже
+
+formatters:
+  enable:
+    - gofmt           # форматирование
+    - goimports       # импорты + форматирование
+
+issues:
+  max-issues-per-linter: 0      # 0 = без лимита
+  max-same-issues: 0            # 0 = без лимита по одинаковым
+
+  # не гоняем линтер по миграциям и нагрузочным скриптам
+  exclude-dirs:
+    - migrations
+    - loadtest
+
+  # игнорируем openapi-описание
+  exclude-files:
+    - "openapi.yml"
+
+  exclude-rules:
+    # в тестах более мягкое отношение к errcheck
+    - path: _test\.go
+      linters:
+        - errcheck

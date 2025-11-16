@@ -70,3 +70,18 @@ type GetUserReviewsResponse struct {
 	UserID       string             `json:"user_id"`
 	PullRequests []PullRequestShort `json:"pull_requests"`
 }
+
+type ReviewerAssignmentsStat struct {
+	UserID      string `json:"user_id" db:"user_id"`
+	Assignments int    `json:"assignments" db:"assignments"`
+}
+
+type AssignmentsStatsResponse struct {
+	Reviewers []ReviewerAssignmentsStat `json:"reviewers"`
+}
+
+type BulkDeactivateResult struct {
+	TeamName        string `json:"team_name"`
+	Deactivated     int    `json:"deactivated"`
+	ReassignedCount int    `json:"reassigned"`
+}

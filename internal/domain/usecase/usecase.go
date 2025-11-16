@@ -3,11 +3,9 @@ package usecase
 import (
 	"context"
 	"math/rand"
-	"pr-service/internal/domain/repository/postgres"
-	"time"
-
 	"pr-service/config"
 	"pr-service/internal/domain/entities"
+	"pr-service/internal/domain/repository/postgres"
 
 	"go.uber.org/zap"
 )
@@ -26,6 +24,10 @@ type repository interface {
 	MarkPullRequestMerged(ctx context.Context, prID string) (entities.PullRequest, []string, error)
 	ReplaceReviewer(ctx context.Context, prID, oldUserID, newUserID string) error
 	ListPullRequestsByReviewer(ctx context.Context, reviewerID string) ([]entities.PullRequestShort, error)
+
+	GetAssignmentsStats(ctx context.Context) ([]entities.ReviewerAssignmentsStat, error)
+
+	BulkDeactivateTeamUsers(ctx context.Context, teamName string, userIDs []string) (entities.BulkDeactivateResult, error)
 }
 
 type Usecase struct {
@@ -39,15 +41,15 @@ func NewUsecase(
 	repo *postgres.Repository,
 	cfg *config.ConfigModel,
 ) (*Usecase, error) {
-	rand.Seed(time.Now().UnixNano())
 	return &Usecase{cfg: cfg, log: log, repo: repo}, nil
 }
 
-func pickReviewers(users []entities.User, max int) []string {
-	if max <= 0 || len(users) == 0 {
+func pickReviewers(users []entities.User, limit int) []string {
+	if limit <= 0 || len(users) == 0 {
 		return nil
 	}
-	if len(users) <= max {
+
+	if len(users) <= limit {
 		res := make([]string, 0, len(users))
 		for _, u := range users {
 			res = append(res, u.UserID)
@@ -59,13 +61,15 @@ func pickReviewers(users []entities.User, max int) []string {
 	for i := range users {
 		idxs[i] = i
 	}
+
 	rand.Shuffle(len(idxs), func(i, j int) {
 		idxs[i], idxs[j] = idxs[j], idxs[i]
 	})
 
-	res := make([]string, 0, max)
-	for i := 0; i < max; i++ {
+	res := make([]string, 0, limit)
+	for i := 0; i < limit; i++ {
 		res = append(res, users[idxs[i]].UserID)
 	}
+
 	return res
 }

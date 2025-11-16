@@ -19,3 +19,8 @@ type ReassignReviewerRequest struct {
 	PullRequestID string `json:"pull_request_id" binding:"required"`
 	OldReviewerID string `json:"old_reviewer_id" binding:"required"`
 }
+
+type BulkDeactivateRequest struct {
+	TeamName string   `json:"team_name" binding:"required"`
+	UserIDs  []string `json:"user_ids" binding:"required"`
+}
