@@ -59,7 +59,6 @@ func TestCreateTeamAndStatsIntegration(t *testing.T) {
 		},
 	}
 
-	// до создания команды её не должно существовать
 	exists, err := repo.TeamExists(ctx, teamName)
 	if err != nil {
 		t.Fatalf("TeamExists(before): %v", err)
@@ -72,7 +71,6 @@ func TestCreateTeamAndStatsIntegration(t *testing.T) {
 		t.Fatalf("CreateTeam: %v", err)
 	}
 
-	// команда должна появиться
 	exists, err = repo.TeamExists(ctx, teamName)
 	if err != nil {
 		t.Fatalf("TeamExists(after): %v", err)
@@ -89,7 +87,6 @@ func TestCreateTeamAndStatsIntegration(t *testing.T) {
 		t.Fatalf("expected %d members, got %d", len(team.Members), len(got.Members))
 	}
 
-	// просто проверяем, что статистика по ревьюерам отрабатывает без ошибок
 	if _, err := repo.GetAssignmentsStats(ctx); err != nil {
 		t.Fatalf("GetAssignmentsStats: %v", err)
 	}
@@ -172,7 +169,6 @@ func TestListTeamActiveUsersExceptIntegration(t *testing.T) {
 		t.Fatalf("expected active users %v, got %v", expected, usersToIDs(users))
 	}
 
-	// выключаем одного пользователя и проверяем, что он пропал из результатов
 	if _, err := repo.SetUserIsActive(ctx, u2, false); err != nil {
 		t.Fatalf("SetUserIsActive: %v", err)
 	}
@@ -335,8 +331,6 @@ func TestAssignmentsStatsIntegration(t *testing.T) {
 		t.Fatalf("CreateTeam: %v", err)
 	}
 
-	// создаём три PR-а:
-	// r1: 3 назначения, r2: 1 назначение
 	pr1 := entities.PullRequest{
 		PullRequestID:   fmt.Sprintf("int_stats_pr1_%d", ts),
 		PullRequestName: "Stats PR1",
@@ -463,7 +457,6 @@ func TestBulkDeactivateTeamUsersIntegration_Success(t *testing.T) {
 		t.Fatalf("expected reviewer %s to be removed from all PRs, got pr1=%v pr2=%v", r1, pr1Reviewers, pr2Reviewers)
 	}
 
-	// по логике из bulk.go в обоих PR-ах должны остаться r2 и r3
 	if !haveSameStrings(pr1Reviewers, []string{r2, r3}) {
 		t.Fatalf("unexpected reviewers for pr1: %v", pr1Reviewers)
 	}
@@ -509,7 +502,6 @@ func TestBulkDeactivateTeamUsersIntegration_NoReplacementCandidate(t *testing.T)
 		t.Fatalf("expected ErrNoReplacementCandidate, got res=%+v err=%v", res, err)
 	}
 
-	// транзакция должна была откатиться: пользователь активен, PR всё ещё на него навешан
 	u, err := repo.GetUserByID(ctx, reviewerID)
 	if err != nil {
 		t.Fatalf("GetUserByID: %v", err)
@@ -526,8 +518,6 @@ func TestBulkDeactivateTeamUsersIntegration_NoReplacementCandidate(t *testing.T)
 		t.Fatalf("expected reviewers [%s] after rollback, got %v", reviewerID, reviewers)
 	}
 }
-
-// === helpers ===
 
 func usersToIDs(users []entities.User) []string {
 	res := make([]string, 0, len(users))

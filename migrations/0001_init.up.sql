@@ -33,3 +33,4 @@ CREATE TABLE pull_request_reviewers (
 );
 
 CREATE INDEX idx_reviewers_reviewer ON pull_request_reviewers(reviewer_id);
+CREATE INDEX idx_pull_requests_status ON pull_requests(status);

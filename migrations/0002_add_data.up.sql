@@ -77,5 +77,3 @@ SELECT
     CASE WHEN n % 5 = 0 THEN FALSE ELSE TRUE END AS is_active
 FROM nums
 ORDER BY n;
-
-CREATE INDEX idx_pull_requests_status ON pull_requests(status);

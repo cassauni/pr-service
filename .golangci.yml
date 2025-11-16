@@ -11,9 +11,9 @@ linters:
     - staticcheck     # мощный набор статических проверок
     - ineffassign     # неиспользуемые присваивания
     - errcheck        # необработанные ошибки
-    - revive          # стиль, простые code-smell'ы
 
   disable:
+    - revive
     - depguard        # ограничения по импортам нам не нужны
     - funlen          # слишком строгий для учебного задания
     - godox           # не ругаемся на TODO
