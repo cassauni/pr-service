@@ -17,8 +17,6 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /src/pr-service /usr/local/bin/pr-service
 RUN chmod +x /usr/local/bin/pr-service
 
-COPY config/config.yaml /etc/pr-service/config.yaml
-
 WORKDIR /
 
 EXPOSE 8080
